@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="28dp">
+
+    <LinearLayout
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/ic_launcher_fg"
+        android:orientation="vertical" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="朋友圈"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="填你的博客地址，开始使用"
+        android:textColor="@color/muted"
+        android:textSize="14sp" />
+
+    <EditText
+        android:id="@+id/url_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:hint="https://你的博客.com"
+        android:inputType="textUri"
+        android:background="@drawable/bg_input"
+        android:padding="14dp"
+        android:textColor="@color/text"
+        android:textColorHint="@color/muted" />
+
+    <Button
+        android:id="@+id/url_save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="进入"
+        android:backgroundTint="@color/green" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="地址会存在本机，之后可在右上角菜单里修改"
+        android:textColor="@color/muted"
+        android:textSize="12sp"
+        android:gravity="center" />
+
+</LinearLayout>

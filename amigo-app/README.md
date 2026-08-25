@@ -6,10 +6,18 @@
 
 ```
 amigo-app/
-├── app/src/main/java/com/amigo/app/MainActivity.kt   # 双 Tab + WebView
+├── app/src/main/java/com/amigo/app/MainActivity.kt   # 双 Tab + WebView + 站点欢迎页
 ├── app/src/main/res/                                  # 布局、菜单、图标、主题
 └── gradlew.bat                                        # 已带 Gradle Wrapper 8.9
 ```
+
+## 配置博客地址
+
+首次打开 APP 会显示本地欢迎页，直接填你的博客地址（如 `https://你的博客.com`）点「进入」，地址存在本机，之后不用再填。
+
+以后想换站点：右上角菜单 →「修改站点」。
+
+「设置」Tab 自动加载 `博客地址 + "/ai-bot-admin/"`，管理 API 走 Nginx 同域反代（见 `ai-bot/README.md` 管理 API 一节）。
 
 ## 构建 APK
 
@@ -27,16 +35,6 @@ sdk.dir=C\:\\Android\\sdk
 
 > 中文路径项目可构建：项目 `gradle.properties` 已带 `android.overridePathCheck=true`。
 > 首次构建需网络拉依赖；国内网络需让 Gradle JVM 走代理（用户级 `~/.gradle/gradle.properties` 加 `systemProp.https.proxyHost/Port`）。
-
-## 配置博客地址
-
-编辑 `MainActivity.kt` 顶部常量：
-
-```kotlin
-private val blogUrl = "https://你的博客.com"   // 改成你的线上地址，必须 https
-```
-
-「设置」Tab 自动加载 `blogUrl + "/ai-bot-admin/"`，管理 API 走 Nginx 同域反代（见 `ai-bot/README.md` 管理 API 一节）。
 
 ## 发布（release 签名）
 

@@ -2,6 +2,8 @@
 <resources>
     <color name="bg">#111111</color>
     <color name="card">#1e1e1e</color>
+    <color name="card2">#232427</color>
+    <color name="line">#2d2d2d</color>
     <color name="green">#07C160</color>
     <color name="green_dark">#06ad56</color>
     <color name="text">#e6e6e6</color>

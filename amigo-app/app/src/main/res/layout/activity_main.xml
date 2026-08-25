@@ -4,6 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/bg"
+        android:titleTextColor="@color/text" />
+
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
