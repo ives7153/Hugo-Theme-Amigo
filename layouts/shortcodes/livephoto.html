@@ -16,8 +16,12 @@
   {{- end -}}
 {{- end -}}
 {{- $style := .Get "style" -}}
+{{- $ratioDecl := "" -}}
+{{- if findRE "^aspect-ratio\\s*:\\s*\\d+(\\.\\d+)?\\s*/\\s*\\d+(\\.\\d+)?$" $style -}}
+  {{- $ratioDecl = $style -}}
+{{- end -}}
 
-<div class="live-photo"{{ with $style }}{{ printf " style=%q" (. | safeCSS) | safeHTMLAttr }}{{ end }}>
+<div class="live-photo"{{ with $ratioDecl }} style="{{ . | safeCSS }}"{{ end }}>
   <img class="live-photo-poster" src="{{ $image }}" alt="{{ $alt }}" loading="lazy" data-keep="1" no-view>
   <video class="live-photo-video" data-src="{{ $video }}" poster="{{ $image }}" muted playsinline loop preload="metadata" aria-label="{{ $alt }}"></video>
   <div class="live-photo-controls-group">

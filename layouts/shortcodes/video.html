@@ -2,6 +2,9 @@
 {{- $poster := .Get "poster" | default "" -}}
 {{- $alt := .Get "alt" | default "" -}}
 {{- $ratio := .Get "ratio" | default "16/9" -}}
+{{- if not (findRE "^\\d+(\\.\\d+)?\\s*/\\s*\\d+(\\.\\d+)?$" $ratio) -}}
+  {{- $ratio = "16/9" -}}
+{{- end -}}
 {{- $autoplay := .Get "autoplay" | default "false" -}}
 {{- $loop := .Get "loop" | default "false" -}}
 {{- $muted := .Get "muted" | default "false" -}}

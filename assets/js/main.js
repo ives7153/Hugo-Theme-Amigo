@@ -848,22 +848,6 @@ function initEmailValidationForSingle(artalkEl) {
 }
 
 
-/**
- * 获取IP归属地（中文）
- */
-async function getIPLocation() {
-    try {
-        const response = await fetch('https://www.ip9.com.cn/?source=api');
-        const data = await response.json();
-        if (data.addr) {
-            return data.addr;
-        }
-        return '';
-    } catch (e) {
-        console.warn('获取IP归属地失败:', e);
-        return '';
-    }
-}
 
 /**
  * 处理点赞动作
@@ -887,8 +871,6 @@ async function handleLikeAction(artalkInstance) {
         } catch (e) { console.warn('更新用户信息失败了', e); }
     }
 
-    // 获取IP归属地
-    const ipLocation = await getIPLocation();
 
     // 下面是一堆尝试获取编辑器并提交点赞的逻辑
     
@@ -921,10 +903,8 @@ async function handleLikeAction(artalkInstance) {
         
         if (typeof Qmsg !== 'undefined') Qmsg.loading('正在点赞...', { autoClose: true });
 
-        // 生成点赞内容，包含IP归属地
-        const likeContent = ipLocation
-            ? `${ipLocation}的访客觉得这个文章很赞 <span style="display:none">[LIKE]</span>`
-            : '觉得这个文章很赞 <span style="display:none">[LIKE]</span>';
+        // 生成点赞内容
+        const likeContent = '觉得这个文章很赞 <span style="display:none">[LIKE]</span>';
 
         const payload = {
             nick: currentNick,
@@ -980,9 +960,7 @@ async function handleLikeAction(artalkInstance) {
 
     // 有编辑器的话就简单了，填内容，提交！
     const originalContent = editor.getContent();
-    const likeContent = ipLocation
-        ? `${ipLocation}的访客觉得这个文章很赞 <span style="display:none">[LIKE]</span>`
-        : '觉得这个文章很赞 <span style="display:none">[LIKE]</span>';
+    const likeContent = '觉得这个文章很赞 <span style="display:none">[LIKE]</span>';
 
     // 清除缓存，让下次加载时重新获取
     LikesCache.clear(artalkInstance.conf.pageKey);
@@ -1120,8 +1098,10 @@ function renderWeChatFeed(artalkInstance, container, comments) {
             itemDiv.className = 'wechat-comment-item';
             
             let replyTargetNick = null;
+            const rawContent = c.content || '';
+            const safeContent = (typeof DOMPurify !== 'undefined') ? DOMPurify.sanitize(rawContent) : rawContent;
             const tempC = document.createElement('div');
-            tempC.innerHTML = c.content;
+            tempC.innerHTML = safeContent;
             
             // 看看是不是回复某人的
             const replyAtNode = tempC.querySelector('.atk-reply-at');

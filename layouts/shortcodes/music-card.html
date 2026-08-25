@@ -3,7 +3,9 @@
 {{ $name := .Get "name" | default "未知歌曲" }}
 {{ $artist := .Get "artist" | default "未知艺术家" }}
 {{ $accent := .Get "accent" | default "#d43c33" }}
-{{ $isApi := strings.HasPrefix $src "https://open.motues.top/music" }}
+{{ if not (findRE "^#[0-9a-fA-F]{3,8}$" $accent) }}{{ $accent = "#d43c33" }}{{ end }}
+{{ $musicApi := site.Params.musicApi | default "https://open.motues.top/music" }}
+{{ $isApi := strings.HasPrefix $src $musicApi }}
 
 <div class="amigo-music-card-mark amigo-music-card" data-amigo-music-card="1" data-src="{{ $src }}" data-name="{{ $name }}" data-artist="{{ $artist }}" data-is-api="{{ if $isApi }}true{{ else }}false{{ end }}" style="--music-accent:{{ $accent }}">
     <div class="amigo-music-card__hero">

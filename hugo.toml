@@ -61,6 +61,9 @@ theme = 'Amigo'
   # 首页顶部封面：可以是图片或视频
   # headerMedia = "/images/header.png"
   headerMedia = "/videos/2792755201.mp4"
+
+  # 音乐卡片 API 地址（music-card 短代码的 meting API 代理）
+  musicApi = "https://open.motues.top/music"
   
   # 2. Giscus 评论（官方文档：https://giscus.app/）
   # 如果上面填了 Artalk，会优先用 Artalk。两个都空着就不显示评论。

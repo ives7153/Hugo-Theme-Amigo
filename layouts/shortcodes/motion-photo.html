@@ -2,6 +2,7 @@
 {{ $video := .Get "video" | default "" }}
 {{ $alt := .Get "alt" | default "" }}
 {{ $ratio := .Get "ratio" | default "3/4" }}
+{{ if not (findRE "^\\d+(\\.\\d+)?\\s*/\\s*\\d+(\\.\\d+)?$" $ratio) }}{{ $ratio = "3/4" }}{{ end }}
 {{ $delay := .Get "delay" | default "500" }}
 
 {{/* 如果没指定 video，尝试从 image 路径推导 */}}

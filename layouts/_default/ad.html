@@ -43,9 +43,9 @@
                 {{ .Content }}
             </div>
 
-            {{ if $adUrl }}
+            {{ if and $adUrl (findRE "^(https?://|/|#)" $adUrl) }}
             <div class="ad-actions">
-                <a class="ad-cta" href="{{ $adUrl | safeURL }}" target="_blank" rel="noopener nofollow">{{ $adCta }}</a>
+                <a class="ad-cta" href="{{ $adUrl }}" target="_blank" rel="noopener nofollow">{{ $adCta }}</a>
             </div>
             {{ end }}
         </article>

@@ -29,7 +29,8 @@
     <link rel="stylesheet" href="{{ $bundleCss.RelPermalink }}" integrity="{{ $bundleCss.Data.Integrity }}">
 
     {{- /* 把所有 JS 打包到一起 */ -}}
-    {{- $scripts := slice (resources.Get "js/message.min.js") (resources.Get "js/main.js") -}}
+    {{- $configJs := resources.Get "js/amigo-config.js" | resources.ExecuteAsTemplate "js/amigo-config.js" . -}}
+    {{- $scripts := slice $configJs (resources.Get "lib/dompurify/purify.min.js") (resources.Get "js/message.min.js") (resources.Get "js/main.js") -}}
     
     {{- if ne .Site.Params.enableLightbox false -}}
         {{- $scripts = $scripts | append (resources.Get "js/view-image.min.js") -}}
@@ -58,17 +59,7 @@
                 document.documentElement.removeAttribute('data-theme');
             }
         })();
-        // 全局配置，JS 脚本里会用到
-        window.amigoConfig = {
-            artalkServer: "{{ .Site.Params.artalkServer }}",
-            artalkSite: "{{ .Site.Params.artalkSite }}",
-            commentMode: "{{ .Site.Params.commentMode }}",
-            twikooEnvId: "{{ .Site.Params.twikooEnvId }}",
-            twikooLang: "{{ .Site.Params.twikooLang | default "zh-CN" }}",
-            enableDanmaku: {{ if eq .Site.Params.enableDanmaku false }}false{{ else }}true{{ end }},
-            headerMediaList: {{ with .Site.Params.headerMediaList }}{{ . | jsonify }}{{ else }}[]{{ end }},
-            headerMedia: "{{ .Site.Params.headerMedia | default .Site.Params.cover }}"
-        };
+
     </script>
 
     {{- /* 根据后台配置动态加载字体 */ -}}
