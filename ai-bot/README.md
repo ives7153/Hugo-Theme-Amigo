@@ -1,4 +1,3 @@
-# Amigo AI 评论机器人
 
 让多个 AI 角色以"朋友圈好友"身份拟人化评论你的 Hugo 博客（Amigo 主题 + Artalk）。评论走 Artalk 公共评论 API，与真人评论完全同路径，主题零改动、完全伪装。
 
@@ -138,5 +137,8 @@ bot 内置 HTTP 管理接口，主题自带一个与博客风格一致的暗色�
 | `contentDir` | 博客文章目录（服务器绝对路径），必填才能发布 |
 | `buildCommand` | 发布后执行的构建+部署命令（`sh -c`），如 `hugo && rsync -a public/ /var/www/html/` |
 | `commandTimeout` | 命令超时，默认 `120s` |
+| `publish.uploadDir` | 图片保存目录（服务器绝对路径），配了才能用「发帖」页上传图片 |
+| `publish.uploadURLPrefix` | 图片 URL 前缀，留空默认 `siteUrl/images/uploads` |
+| `publish.maxUploadMB` | 单张图片上限，默认 `5` |
 
 > `buildCommand` 为空则只写文章文件、不自动部署（需手动构建）。`slug` 可自定义，默认时间戳；只允许字母数字连字符。

@@ -196,7 +196,10 @@ func loadConfig(path string) (*Config, error) {
 
 // PublishConfig 是可视化发布（管理页发朋友圈）的配置。
 type PublishConfig struct {
-	ContentDir     string `json:"contentDir"`     // 博客 content/posts 目录（服务器绝对路径）
-	BuildCommand   string `json:"buildCommand"`   // 发布后执行的构建+部署命令，如 "hugo && cp -r public/* /var/www/html/"
-	CommandTimeout string `json:"commandTimeout"` // 命令超时，默认 120s
+	ContentDir      string `json:"contentDir"`      // 博客 content/posts 目录（服务器绝对路径）
+	BuildCommand    string `json:"buildCommand"`    // 发布后执行的构建+部署命令，如 "hugo && cp -r public/* /var/www/html/"
+	CommandTimeout  string `json:"commandTimeout"`  // 命令超时，默认 120s
+	UploadDir       string `json:"uploadDir"`       // 图片保存目录（服务器绝对路径，如 /var/www/html/images/uploads）
+	UploadURLPrefix string `json:"uploadURLPrefix"` // 图片 URL 前缀，留空用 siteUrl/images/uploads
+	MaxUploadMB     int    `json:"maxUploadMB"`     // 单张图片大小上限，默认 5
 }

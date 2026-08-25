@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/subtle"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -44,6 +47,7 @@ func (s *AdminServer) Handler() http.Handler {
 	mux.HandleFunc("PUT /api/config", s.auth(s.handlePutConfig))
 	mux.HandleFunc("GET /api/status", s.auth(s.handleGetStatus))
 	mux.HandleFunc("POST /api/publish", s.auth(s.handlePublish))
+	mux.HandleFunc("POST /api/upload", s.auth(s.handleUpload))
 	return cors(mux)
 }
 
@@ -249,4 +253,77 @@ func (s *AdminServer) handlePublish(w http.ResponseWriter, r *http.Request) {
 
 	postURL := strings.TrimRight(s.siteURL, "/") + "/posts/" + slug + "/"
 	writeJSON(w, http.StatusOK, map[string]string{"ok": "发布成功，AI 评论稍后自动跟进", "url": postURL})
+}
+
+// handleUpload 接收管理页上传的图片：校验类型/大小，存到 uploadDir，返回可访问 URL。
+func (s *AdminServer) handleUpload(w http.ResponseWriter, r *http.Request) {
+	if s.publish.UploadDir == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "config.publish.uploadDir 未配置，无法上传"})
+		return
+	}
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "解析上传失败: " + err.Error()})
+		return
+	}
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "缺少 image 文件"})
+		return
+	}
+	defer file.Close()
+
+	maxMB := s.publish.MaxUploadMB
+	if maxMB <= 0 {
+		maxMB = 5
+	}
+	maxBytes := int64(maxMB) * 1 << 20
+	if header.Size > maxBytes {
+		writeJSON(w, http.StatusRequestEntityTooLarge, map[string]string{"error": fmt.Sprintf("图片超过 %dMB 限制", maxMB)})
+		return
+	}
+
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	switch ext {
+	case ".jpg", ".jpeg", ".png", ".gif", ".webp":
+	default:
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "只支持 jpg/png/gif/webp 图片"})
+		return
+	}
+
+	buf := make([]byte, 512)
+	n, _ := io.ReadFull(file, buf)
+	mime := http.DetectContentType(buf[:n])
+	if !strings.HasPrefix(mime, "image/") {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "文件内容不是图片"})
+		return
+	}
+
+	randBytes := make([]byte, 4)
+	if _, err := rand.Read(randBytes); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "生成文件名失败"})
+		return
+	}
+	name := time.Now().Format("20060102") + "-" + hex.EncodeToString(randBytes) + ext
+
+	dst, err := os.Create(filepath.Join(s.publish.UploadDir, name))
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "保存图片失败: " + err.Error()})
+		return
+	}
+	defer dst.Close()
+	if _, err := dst.Write(buf[:n]); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "写入图片失败: " + err.Error()})
+		return
+	}
+	if _, err := io.Copy(dst, file); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "写入图片失败: " + err.Error()})
+		return
+	}
+
+	prefix := strings.TrimRight(s.publish.UploadURLPrefix, "/")
+	if prefix == "" {
+		prefix = strings.TrimRight(s.siteURL, "/") + "/images/uploads"
+	}
+	s.log.Info("管理页上传图片", "file", name, "size", header.Size)
+	writeJSON(w, http.StatusOK, map[string]string{"ok": "上传成功", "url": prefix + "/" + name})
 }

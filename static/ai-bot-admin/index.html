@@ -142,6 +142,12 @@ tr:last-child td{border-bottom:none}
     </div>
     <div class="field" style="margin-bottom:10px"><label>正文（Markdown，图片直接贴 URL）</label>
       <textarea id="p-content" style="min-height:160px" placeholder="支持 Markdown，图片用 ![描述](https://图片地址) 插入"></textarea>
+    <div class="row">
+      <input type="file" id="p-image" accept="image/jpeg,image/png,image/gif,image/webp" style="flex:1;color:var(--muted)">
+      <button class="btn ghost" id="p-upload">上传图片</button>
+    </div>
+    <img id="p-preview" style="max-width:140px;border-radius:8px;display:none;margin-bottom:10px">
+    <div id="p-upload-result" class="muted" style="margin-bottom:10px"></div>
     </div>
     <button class="btn" id="publish" style="width:100%;padding:12px">发布</button>
     <div id="publish-result" class="muted" style="margin-top:10px"></div>
@@ -381,6 +387,46 @@ tr:last-child td{border-bottom:none}
       document.querySelectorAll(".tab").forEach(function(x){ x.classList.remove("show"); });
       $("tab-" + tab).classList.add("show");
       if (tab === "status") { loadStatus(); }
+
+  $("p-image").addEventListener("change", function(){
+    var f = $("p-image").files[0];
+    if (!f) { $("p-preview").style.display = "none"; return; }
+    $("p-preview").src = URL.createObjectURL(f);
+    $("p-preview").style.display = "block";
+  });
+  $("p-upload").addEventListener("click", function(){
+    var f = $("p-image").files[0];
+    if (!f) { toast("先选图片", false); return; }
+    var fd = new FormData();
+    fd.append("image", f);
+    var btn = $("p-upload");
+    btn.disabled = true;
+    fetch(API + "upload", { method: "POST", headers: { Authorization: "Bearer " + token() }, body: fd })
+      .then(function(r){
+        return r.json().catch(function(){ return {}; }).then(function(j){
+          if (!r.ok) { throw new Error(j.error || ("HTTP " + r.status)); }
+          return j;
+        });
+      })
+      .then(function(j){
+        insertMarkdown("![](" + j.url + ")");
+        $("p-upload-result").innerHTML = "已插入：" + j.url;
+        toast("图片已上传", true);
+        btn.disabled = false;
+      })
+      .catch(function(e){
+        toast("上传失败: " + e.message, false);
+        btn.disabled = false;
+      });
+  });
+  function insertMarkdown(text){
+    var ta = $("p-content");
+    var start = ta.selectionStart || ta.value.length;
+    var end = ta.selectionEnd || ta.value.length;
+    ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+    ta.selectionStart = ta.selectionEnd = start + text.length;
+    ta.focus();
+  }
     });
   });
 

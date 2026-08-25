@@ -54,7 +54,14 @@
     }
   ],
   "mock": false,
-  "publish": { "contentDir": "/opt/blog/content/posts", "buildCommand": "cd /opt/blog && hugo --minify && rsync -a public/ /var/www/html/", "commandTimeout": "120s" },
+  "publish": {
+    "contentDir": "/opt/blog/content/posts",
+    "buildCommand": "cd /opt/blog && hugo --minify && rsync -a public/ /var/www/html/",
+    "commandTimeout": "120s",
+    "uploadDir": "/var/www/html/images/uploads",
+    "uploadURLPrefix": "https://example.com/images/uploads",
+    "maxUploadMB": 5
+  },
   "stateFile": "ai-state.json",
   "admin": { "token": "换成你的强随机密码" },
   "logLevel": "info"
