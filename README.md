@@ -61,6 +61,7 @@
 - [AI 机器人配置与部署](ai-bot/README.md)
 - [安卓 APP 构建](amigo-app/README.md)
 - [服务器部署手册](DEPLOY.md)
+- [主题使用文档（短代码、评论配置、主题参数）](THEME.md)
 
 ## 安全
 
