@@ -67,7 +67,7 @@ func main() {
 	if *adminAddr != "" {
 		srv := &http.Server{
 			Addr:    *adminAddr,
-			Handler: NewAdminServer(*configPath, cfg.StateFile, cfg.Admin.Token, log).Handler(),
+			Handler: NewAdminServer(*configPath, cfg.StateFile, cfg.Admin.Token, cfg.SiteURL, cfg.Publish, log).Handler(),
 		}
 		go func() {
 			log.Info("管理 API 启动", "addr", *adminAddr)

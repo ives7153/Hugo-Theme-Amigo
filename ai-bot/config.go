@@ -19,6 +19,7 @@ type Config struct {
 	Admin          AdminConfig    `json:"admin"`
 	StateFile      string         `json:"stateFile"`
 	LogLevel       string         `json:"logLevel"`
+	Publish        PublishConfig  `json:"publish"`
 }
 
 type ArtalkConfig struct {
@@ -191,4 +192,11 @@ func loadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 	return &cfg, nil
+}
+
+// PublishConfig 是可视化发布（管理页发朋友圈）的配置。
+type PublishConfig struct {
+	ContentDir     string `json:"contentDir"`     // 博客 content/posts 目录（服务器绝对路径）
+	BuildCommand   string `json:"buildCommand"`   // 发布后执行的构建+部署命令，如 "hugo && cp -r public/* /var/www/html/"
+	CommandTimeout string `json:"commandTimeout"` // 命令超时，默认 120s
 }

@@ -71,6 +71,7 @@ tr:last-child td{border-bottom:none}
 <nav class="tabs" id="tabs" style="display:none">
   <button data-tab="config" class="active">配置</button>
   <button data-tab="status">动态</button>
+  <button data-tab="publish">发帖</button>
 </nav>
 
 <main id="tab-config" class="tab show">
@@ -124,9 +125,26 @@ tr:last-child td{border-bottom:none}
 </main>
 
 <main id="tab-status" class="tab">
+
   <div class="card">
     <h2>最近动态</h2>
     <div id="status-list"><div class="muted">加载中…</div></div>
+  </div>
+</main>
+<main id="tab-publish" class="tab">
+  <div class="card">
+    <h2>发朋友圈</h2>
+    <div class="row">
+      <div class="field"><label>标题</label><input id="p-title" placeholder="今天做了啥"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>自定义链接（可选，留空自动生成）</label><input id="p-slug" placeholder="my-first-post"></div>
+    </div>
+    <div class="field" style="margin-bottom:10px"><label>正文（Markdown，图片直接贴 URL）</label>
+      <textarea id="p-content" style="min-height:160px" placeholder="支持 Markdown，图片用 ![描述](https://图片地址) 插入"></textarea>
+    </div>
+    <button class="btn" id="publish" style="width:100%;padding:12px">发布</button>
+    <div id="publish-result" class="muted" style="margin-top:10px"></div>
   </div>
 </main>
 </div>
@@ -334,6 +352,27 @@ tr:last-child td{border-bottom:none}
     renderRoles(cfg.characters);
   });
   $("save").addEventListener("click", save);
+  $("publish").addEventListener("click", function(){
+    var btn = $("publish");
+    var title = $("p-title").value.trim();
+    var content = $("p-content").value.trim();
+    if (!title) { toast("写个标题", false); return; }
+    if (!content) { toast("正文不能空", false); return; }
+    btn.disabled = true;
+    api("publish", "POST", { title: title, content: content, slug: $("p-slug").value.trim() })
+      .then(function(j){
+        $("publish-result").innerHTML = "已发布：" + (j.url || "") + "<br>" + esc(j.ok || "");
+        toast("发布成功", true);
+        $("p-title").value = "";
+        $("p-content").value = "";
+        $("p-slug").value = "";
+        btn.disabled = false;
+      }).catch(function(e){
+        $("publish-result").innerHTML = "失败：" + esc(e.message);
+        toast("发布失败: " + e.message, false);
+        btn.disabled = false;
+      });
+  });
   document.querySelectorAll("#tabs button").forEach(function(b){
     b.addEventListener("click", function(){
       document.querySelectorAll("#tabs button").forEach(function(x){ x.classList.remove("active"); });

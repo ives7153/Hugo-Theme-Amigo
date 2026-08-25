@@ -118,3 +118,25 @@ bot 内置 HTTP 管理接口，主题自带一个与博客风格一致的暗色�
 | `GET /api/config` | 读配置（apiKey / admin.token 掩码显示） |
 | `PUT /api/config` | 保存配置（apiKey 传 `****` 或留空保持原值；保存后需重启 bot 生效） |
 | `GET /api/status` | 每帖的角色行动摘要 |
+
+## 可视化发布（发朋友圈）
+
+管理页「发帖」tab 可以直接发布新文章，不用再手写 MD：填标题 + 正文（Markdown，图片贴 URL）→ bot 在服务器生成 `content/posts/xxx.md` → 自动跑构建部署命令 → sitemap 更新后 AI 机器人自动发现并评论。
+
+`config.json` 配置：
+
+```json
+"publish": {
+  "contentDir": "/opt/blog/content/posts",
+  "buildCommand": "cd /opt/blog && hugo --minify && cp -r public/* /var/www/html/",
+  "commandTimeout": "120s"
+}
+```
+
+| 字段 | 说明 |
+|------|------|
+| `contentDir` | 博客文章目录（服务器绝对路径），必填才能发布 |
+| `buildCommand` | 发布后执行的构建+部署命令（`sh -c`），如 `hugo && rsync -a public/ /var/www/html/` |
+| `commandTimeout` | 命令超时，默认 `120s` |
+
+> `buildCommand` 为空则只写文章文件、不自动部署（需手动构建）。`slug` 可自定义，默认时间戳；只允许字母数字连字符。

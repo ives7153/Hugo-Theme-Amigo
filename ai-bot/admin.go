@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -20,14 +25,16 @@ type AdminConfig struct {
 
 // AdminServer 提供配置读写与状态查询 API，供主题管理页调用。
 type AdminServer struct {
+	siteURL    string
+	publish    PublishConfig
 	configPath string
 	statePath  string
 	token      string
 	log        *slog.Logger
 }
 
-func NewAdminServer(configPath, statePath, token string, log *slog.Logger) *AdminServer {
-	return &AdminServer{configPath: configPath, statePath: statePath, token: token, log: log}
+func NewAdminServer(configPath, statePath, token, siteURL string, publish PublishConfig, log *slog.Logger) *AdminServer {
+	return &AdminServer{configPath: configPath, statePath: statePath, token: token, siteURL: siteURL, publish: publish, log: log}
 }
 
 func (s *AdminServer) Handler() http.Handler {
@@ -36,6 +43,7 @@ func (s *AdminServer) Handler() http.Handler {
 	mux.HandleFunc("GET /api/config", s.auth(s.handleGetConfig))
 	mux.HandleFunc("PUT /api/config", s.auth(s.handlePutConfig))
 	mux.HandleFunc("GET /api/status", s.auth(s.handleGetStatus))
+	mux.HandleFunc("POST /api/publish", s.auth(s.handlePublish))
 	return cors(mux)
 }
 
@@ -177,4 +185,68 @@ func cors(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// slugRe 限制发布文章的文件名格式。
+var slugRe = regexp.MustCompile(`^[a-zA-Z0-9-]{1,64}$`)
+
+// handlePublish 接收管理页的"发朋友圈"请求：写 MD 文件并执行构建部署命令。
+func (s *AdminServer) handlePublish(w http.ResponseWriter, r *http.Request) {
+	if s.publish.ContentDir == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "config.publish.contentDir 未配置，无法发布"})
+		return
+	}
+	var req struct {
+		Title   string `json:"title"`
+		Content string `json:"content"`
+		Slug    string `json:"slug"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "请求体不是合法 JSON: " + err.Error()})
+		return
+	}
+	req.Title = strings.TrimSpace(req.Title)
+	req.Content = strings.TrimSpace(req.Content)
+	if req.Title == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "标题不能为空"})
+		return
+	}
+	if req.Content == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "正文不能为空"})
+		return
+	}
+	slug := strings.TrimSpace(req.Slug)
+	if slug == "" {
+		slug = time.Now().Format("20060102150405")
+	}
+	if !slugRe.MatchString(slug) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "slug 只允许字母、数字、连字符"})
+		return
+	}
+	md := fmt.Sprintf("---\ntitle: %q\ndate: %s\ndraft: false\n---\n\n%s\n", req.Title, time.Now().Format(time.RFC3339), req.Content)
+	filename := filepath.Join(s.publish.ContentDir, slug+".md")
+	if err := os.WriteFile(filename, []byte(md), 0o644); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "写入文章失败: " + err.Error()})
+		return
+	}
+	s.log.Info("管理页发布新帖", "title", req.Title, "file", filename)
+
+	if s.publish.BuildCommand != "" {
+		timeout := 120 * time.Second
+		if d, err := time.ParseDuration(s.publish.CommandTimeout); err == nil && d > 0 {
+			timeout = d
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+		cmd := exec.CommandContext(ctx, "sh", "-c", s.publish.BuildCommand)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "构建命令失败: " + err.Error(), "output": string(out)})
+			return
+		}
+		s.log.Info("发布后构建完成", "output", strings.TrimSpace(string(out)))
+	}
+
+	postURL := strings.TrimRight(s.siteURL, "/") + "/posts/" + slug + "/"
+	writeJSON(w, http.StatusOK, map[string]string{"ok": "发布成功，AI 评论稍后自动跟进", "url": postURL})
 }
