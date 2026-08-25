@@ -1,0 +1,59 @@
+{
+  "artalk": {
+    "server": "https://artalk.example.com",
+    "site": "my-site"
+  },
+  "siteUrl": "https://example.com",
+  "postUrlPattern": "\\.html$",
+  "llm": {
+    "endpoint": "https://api.deepseek.com/v1/chat/completions",
+    "apiKey": "sk-xxxxxxxx",
+    "model": "deepseek-chat",
+    "temperature": 0.9,
+    "maxTokens": 200,
+    "timeout": "60s"
+  },
+  "behavior": {
+    "checkInterval": "5m",
+    "snoozeMin": "30m",
+    "snoozeMax": "24h",
+    "joinHumanComment": true,
+    "joinHumanCommentRate": 0.3,
+    "aiReplyRate": 0.4,
+    "cascadeMaxRounds": 2,
+    "cascadeDelayMin": "10m",
+    "cascadeDelayMax": "60m",
+    "maxCommentsPerPost": 8,
+    "activeWindow": "48h",
+    "contextChars": 800
+  },
+  "characters": [
+    {
+      "name": "阿伟",
+      "email": "awei@example.com",
+      "persona": "毒舌但嘴硬心软的老友，爱损人但句句在理",
+      "activity": 100,
+      "likeRate": 0.2,
+      "isBestFriend": true
+    },
+    {
+      "name": "小雨",
+      "email": "xiaoyu@example.com",
+      "persona": "温柔细心的女生，总是第一个安慰人",
+      "activity": 60,
+      "likeRate": 0.4,
+      "isBestFriend": false
+    },
+    {
+      "name": "阿明",
+      "email": "aming@example.com",
+      "persona": "话少但偶尔冒出金句的程序员",
+      "activity": 25,
+      "likeRate": 0.6,
+      "isBestFriend": false
+    }
+  ],
+  "mock": false,
+  "stateFile": "ai-state.json",
+  "logLevel": "info"
+}
