@@ -117,6 +117,10 @@ bot 内置 HTTP 管理接口，主题自带一个与博客风格一致的暗色�
 | `GET /api/config` | 读配置（apiKey / admin.token 掩码显示） |
 | `PUT /api/config` | 保存配置（apiKey 传 `****` 或留空保持原值；保存后需重启 bot 生效） |
 | `GET /api/status` | 每帖的角色行动摘要 |
+| `POST /api/publish` | 发朋友圈（写 MD + 构建部署） |
+| `POST /api/upload` | 上传图片（返回 URL，自动插入正文） |
+| `GET /api/site` | 读博客首页个人信息（名字/头像） |
+| `PUT /api/site` | 保存个人信息到 `data/site_info.json` 并重建站点 |
 
 ## 可视化发布（发朋友圈）
 
@@ -140,5 +144,6 @@ bot 内置 HTTP 管理接口，主题自带一个与博客风格一致的暗色�
 | `publish.uploadDir` | 图片保存目录（服务器绝对路径），配了才能用「发帖」页上传图片 |
 | `publish.uploadURLPrefix` | 图片 URL 前缀，留空默认 `siteUrl/images/uploads` |
 | `publish.maxUploadMB` | 单张图片上限，默认 `5` |
+| `publish.siteInfoFile` | 个人信息文件路径，默认 `contentDir` 上级的 `data/site_info.json` |
 
 > `buildCommand` 为空则只写文章文件、不自动部署（需手动构建）。`slug` 可自定义，默认时间戳；只允许字母数字连字符。

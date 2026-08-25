@@ -60,7 +60,8 @@
     "commandTimeout": "120s",
     "uploadDir": "/var/www/html/images/uploads",
     "uploadURLPrefix": "https://example.com/images/uploads",
-    "maxUploadMB": 5
+    "maxUploadMB": 5,
+    "siteInfoFile": "/opt/blog/data/site_info.json"
   },
   "stateFile": "ai-state.json",
   "admin": { "token": "换成你的强随机密码" },

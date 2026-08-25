@@ -3,7 +3,7 @@
 
     {{ $adUrl := .Params.adlink | default .Params.link | default "" }}
     {{ $adBadge := .Params.badge | default "广告" }}
-    {{ $adBrand := .Params.brand | default .Params.author | default .Site.Params.username }}
+    {{ $adBrand := .Params.brand | default .Params.author | default site.Data.site_info.name | default .Site.Params.username }}
     {{ $adCta := .Params.cta | default "了解更多" }}
     {{ $adImg := .Params.image | default .Params.cover | default "" }}
     {{ $adAvatar := .Params.avatar | default .Site.Params.avatar | default ( "images/avatar.jpg" | relURL ) }}

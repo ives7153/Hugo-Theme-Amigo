@@ -76,6 +76,14 @@ tr:last-child td{border-bottom:none}
 
 <main id="tab-config" class="tab show">
   <div class="card">
+    <h2>个人信息（博客首页）</h2>
+    <div class="row">
+      <div class="field"><label>名字</label><input id="f-site-name"></div>
+      <div class="field"><label>头像 URL</label><input id="f-site-avatar" placeholder="https://..."></div>
+    </div>
+    <button class="btn ghost" id="save-site">保存个人信息</button>
+  </div>
+  <div class="card">
     <h2>站点与评论</h2>
     <div class="row">
       <div class="field"><label>博客地址 siteUrl</label><input id="f-siteUrl" placeholder="https://你的博客.com"></div>
@@ -201,12 +209,19 @@ tr:last-child td{border-bottom:none}
   }
 
   function loadConfig(){
+  function loadSite(){
+    api("site").then(function(s){
+      $("f-site-name").value = s.name || "";
+      $("f-site-avatar").value = s.avatar || "";
+    }).catch(function(){});
+  }
     return api("config").then(function(c){
       cfg = c;
       fillConfig(c);
       $("login").style.display = "none";
       $("tabs").style.display = "flex";
       toast("已连接", true);
+      loadSite();
     });
   }
 
@@ -358,6 +373,13 @@ tr:last-child td{border-bottom:none}
     renderRoles(cfg.characters);
   });
   $("save").addEventListener("click", save);
+  $("save-site").addEventListener("click", function(){
+    var btn = $("save-site");
+    btn.disabled = true;
+    api("site", "PUT", { name: $("f-site-name").value.trim(), avatar: $("f-site-avatar").value.trim() })
+      .then(function(j){ toast(j.ok || "已保存", true); btn.disabled = false; })
+      .catch(function(e){ toast("保存失败: " + e.message, false); btn.disabled = false; });
+  });
   $("publish").addEventListener("click", function(){
     var btn = $("publish");
     var title = $("p-title").value.trim();

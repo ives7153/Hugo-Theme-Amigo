@@ -202,4 +202,5 @@ type PublishConfig struct {
 	UploadDir       string `json:"uploadDir"`       // 图片保存目录（服务器绝对路径，如 /var/www/html/images/uploads）
 	UploadURLPrefix string `json:"uploadURLPrefix"` // 图片 URL 前缀，留空用 siteUrl/images/uploads
 	MaxUploadMB     int    `json:"maxUploadMB"`     // 单张图片大小上限，默认 5
+	SiteInfoFile    string `json:"siteInfoFile"`    // 博客首页个人信息文件，默认 contentDir 上级的 data/site_info.json
 }

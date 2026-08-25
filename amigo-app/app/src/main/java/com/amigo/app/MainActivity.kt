@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-        supportActionBar?.title = blogUrl
+        supportActionBar?.title = "朋友圈"
         webView = findViewById(R.id.webview)
         bottomNav = findViewById(R.id.bottom_nav)
 

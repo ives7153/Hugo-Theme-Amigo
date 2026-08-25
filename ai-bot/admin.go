@@ -48,6 +48,8 @@ func (s *AdminServer) Handler() http.Handler {
 	mux.HandleFunc("GET /api/status", s.auth(s.handleGetStatus))
 	mux.HandleFunc("POST /api/publish", s.auth(s.handlePublish))
 	mux.HandleFunc("POST /api/upload", s.auth(s.handleUpload))
+	mux.HandleFunc("GET /api/site", s.auth(s.handleGetSite))
+	mux.HandleFunc("PUT /api/site", s.auth(s.handlePutSite))
 	return cors(mux)
 }
 
@@ -235,20 +237,9 @@ func (s *AdminServer) handlePublish(w http.ResponseWriter, r *http.Request) {
 	}
 	s.log.Info("管理页发布新帖", "title", req.Title, "file", filename)
 
-	if s.publish.BuildCommand != "" {
-		timeout := 120 * time.Second
-		if d, err := time.ParseDuration(s.publish.CommandTimeout); err == nil && d > 0 {
-			timeout = d
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-		cmd := exec.CommandContext(ctx, "sh", "-c", s.publish.BuildCommand)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "构建命令失败: " + err.Error(), "output": string(out)})
-			return
-		}
-		s.log.Info("发布后构建完成", "output", strings.TrimSpace(string(out)))
+	if err := s.runBuild(); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "构建命令失败: " + err.Error()})
+		return
 	}
 
 	postURL := strings.TrimRight(s.siteURL, "/") + "/posts/" + slug + "/"
@@ -326,4 +317,109 @@ func (s *AdminServer) handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	s.log.Info("管理页上传图片", "file", name, "size", header.Size)
 	writeJSON(w, http.StatusOK, map[string]string{"ok": "上传成功", "url": prefix + "/" + name})
+}
+
+// siteInfo 是博客首页展示的个人信息（写进 Hugo data 目录，主题优先读取）。
+type siteInfo struct {
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
+}
+
+// siteInfoPath 返回个人信息 JSON 路径：显式配置优先，否则用 contentDir 推导。
+func (s *AdminServer) siteInfoPath() string {
+	if s.publish.SiteInfoFile != "" {
+		return s.publish.SiteInfoFile
+	}
+	if s.publish.ContentDir != "" {
+		blogRoot := filepath.Dir(filepath.Dir(s.publish.ContentDir))
+		return filepath.Join(blogRoot, "data", "site_info.json")
+	}
+	return ""
+}
+
+func (s *AdminServer) handleGetSite(w http.ResponseWriter, r *http.Request) {
+	path := s.siteInfoPath()
+	if path == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "config.publish.contentDir 或 siteInfoFile 未配置"})
+		return
+	}
+	info := siteInfo{}
+	if raw, err := os.ReadFile(path); err == nil {
+		_ = json.Unmarshal(raw, &info)
+	} else if !os.IsNotExist(err) {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "读取个人信息失败: " + err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, info)
+}
+
+func (s *AdminServer) handlePutSite(w http.ResponseWriter, r *http.Request) {
+	var info siteInfo
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<20)).Decode(&info); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "请求体不是合法 JSON: " + err.Error()})
+		return
+	}
+	info.Name = strings.TrimSpace(info.Name)
+	info.Avatar = strings.TrimSpace(info.Avatar)
+	if info.Name == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "名字不能为空"})
+		return
+	}
+	if len([]rune(info.Name)) > 50 {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "名字太长（最多 50 字）"})
+		return
+	}
+	if info.Avatar != "" && !strings.HasPrefix(info.Avatar, "https://") && !strings.HasPrefix(info.Avatar, "http://") {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "头像必须是 http(s) 图片地址"})
+		return
+	}
+	path := s.siteInfoPath()
+	if path == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "config.publish.contentDir 或 siteInfoFile 未配置"})
+		return
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "创建目录失败: " + err.Error()})
+		return
+	}
+	data, err := json.MarshalIndent(info, "", "  ")
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, data, 0o644); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "保存失败: " + err.Error()})
+		return
+	}
+	if err := os.Rename(tmp, path); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "保存失败: " + err.Error()})
+		return
+	}
+	s.log.Info("管理页更新个人信息", "name", info.Name)
+	if err := s.runBuild(); err != nil {
+		writeJSON(w, http.StatusOK, map[string]string{"ok": "个人信息已保存，但构建失败: " + err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"ok": "个人信息已保存，首页已更新"})
+}
+
+// runBuild 执行 publish.buildCommand 重建站点。
+func (s *AdminServer) runBuild() error {
+	if s.publish.BuildCommand == "" {
+		return nil
+	}
+	timeout := 120 * time.Second
+	if d, err := time.ParseDuration(s.publish.CommandTimeout); err == nil && d > 0 {
+		timeout = d
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "sh", "-c", s.publish.BuildCommand)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%v: %s", err, strings.TrimSpace(string(out)))
+	}
+	s.log.Info("构建完成", "output", strings.TrimSpace(string(out)))
+	return nil
 }

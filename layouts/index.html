@@ -13,11 +13,11 @@
         {{ end }}
         <div class="header-user">
             <div class="header-avatar">
-                <img src="{{ .Site.Params.avatar | default ( "images/avatar.jpg" | relURL ) }}" alt="Avatar">
+                <img src="{{ site.Data.site_info.avatar | default .Site.Params.avatar | default ( "images/avatar.jpg" | relURL ) }}" alt="Avatar">
             </div>
             <div class="header-info">
                 <h1 class="header-name">
-                    <a href="{{ "posts" | relURL }}">{{ .Site.Params.username | default .Site.Title }}</a>
+                    <a href="{{ "posts" | relURL }}">{{ site.Data.site_info.name | default .Site.Params.username | default .Site.Title }}</a>
                 </h1>
             </div>
         </div>
@@ -62,15 +62,15 @@
 
             {{/* 左侧：头像 */}}
             <aside class="moment-aside">
-                <a class="avatar-link" href="{{ "posts" | relURL }}?author={{ .Params.author | default $.Site.Params.username }}">
-                    <img class="avatar-img" src="{{ .Params.avatar | default $.Site.Params.avatar | default ( "images/avatar.jpg" | relURL ) }}" alt="User" loading="lazy">
+                <a class="avatar-link" href="{{ "posts" | relURL }}?author={{ .Params.author | default site.Data.site_info.name | default $.Site.Params.username }}">
+                    <img class="avatar-img" src="{{ .Params.avatar | default site.Data.site_info.avatar | default $.Site.Params.avatar | default ( "images/avatar.jpg" | relURL ) }}" alt="User" loading="lazy">
                 </a>
             </aside>
 
             {{/* 右侧：动态主体 */}}
             <div class="moment-body">
                 <h2 class="moment-author">
-                    {{ .Params.author | default $.Site.Params.username }}
+                    {{ .Params.author | default site.Data.site_info.name | default $.Site.Params.username }}
                     {{ if $isAd }}<span class="moment-ad-badge">广告</span>{{ end }}
                 </h2>
 

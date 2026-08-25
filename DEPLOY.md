@@ -148,6 +148,7 @@ go build -o amigo-ai-bot .
     "uploadDir": "/var/www/uploads",
     "uploadURLPrefix": "https://example.com/images/uploads",
     "maxUploadMB": 5
+    "siteInfoFile": "/opt/blog/data/site_info.json",
   },
   "admin": { "token": "换成强随机密码，如 openssl rand -hex 24" },
   "stateFile": "ai-state.json",
