@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">朋友圈</string>
+    <string name="tab_feed">朋友圈</string>
+    <string name="tab_admin">设置</string>
+</resources>

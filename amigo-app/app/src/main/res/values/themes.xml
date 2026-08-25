@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Amigo" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/green</item>
+        <item name="colorOnPrimary">#ffffff</item>
+        <item name="colorPrimaryContainer">#1e5c3a</item>
+        <item name="colorSecondary">@color/green</item>
+        <item name="android:colorBackground">@color/bg</item>
+        <item name="android:navigationBarColor">@color/card</item>
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="bottomNavigationStyle">@style/Widget.Material3.BottomNavigationView</item>
+    </style>
+</resources>

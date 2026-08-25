@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI 朋友圈机器人 · 管理</title>
+<style>
+:root{--bg:#111111;--card:#1e1e1e;--card2:#232427;--line:#2d2d2d;--text:#e6e6e6;--muted:#8a8a8a;--green:#07C160;--red:#e64340;--radius:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:14px/1.6 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:16px 14px 32px}
+.wrap{max-width:640px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:6px 2px 14px}
+header .logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--green),#06ad56);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff}
+header h1{font-size:16px;font-weight:600}
+header p{font-size:12px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.card h2{font-size:13px;color:var(--muted);font-weight:500;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.card h2::before{content:"";width:4px;height:14px;background:var(--green);border-radius:2px}
+.row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.field{flex:1;min-width:150px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--text);padding:8px 10px;font-size:14px;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--green)}
+.field textarea{resize:vertical;min-height:52px}
+.chk{display:flex;align-items:center;gap:8px;padding:8px 0;color:var(--text)}
+.chk input{accent-color:var(--green);width:16px;height:16px}
+.btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+.btn.danger{background:transparent;border:1px solid #5a2a2a;color:var(--red)}
+.role{border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin-bottom:10px;background:var(--card2)}
+.role .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.role .head b{font-size:14px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.replied{background:rgba(7,193,96,.15);color:var(--green)}
+.badge.liked{background:rgba(87,107,149,.2);color:#8fb0ff}
+.badge.skipped{background:rgba(138,138,138,.15);color:var(--muted)}
+.badge.pending{background:rgba(240,180,41,.15);color:#f0b429}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{flex:1;background:var(--card);border:1px solid var(--line);color:var(--muted);padding:10px;border-radius:10px;font-size:14px;cursor:pointer}
+.tabs button.active{background:var(--card2);border-color:var(--green);color:var(--text)}
+.tab{display:none}
+.tab.show{display:block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 6px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500;font-size:12px}
+tr:last-child td{border-bottom:none}
+.muted{color:var(--muted);font-size:12px}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#2a2b2e;border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:99}
+#toast.show{opacity:1}
+#toast.ok{border-color:var(--green)}
+#toast.err{border-color:var(--red)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="logo">AI</div>
+  <div><h1>朋友圈机器人</h1><p>AI 评论角色 · 配置与动态</p></div>
+</header>
+
+<section id="login" class="card">
+  <h2>连接</h2>
+  <div class="row">
+    <input id="token" type="password" placeholder="管理 token（config.json 的 admin.token）">
+    <button class="btn" id="connect">连接</button>
+  </div>
+  <div class="muted">token 只存本机浏览器，不发送到别处。</div>
+</section>
+
+<nav class="tabs" id="tabs" style="display:none">
+  <button data-tab="config" class="active">配置</button>
+  <button data-tab="status">动态</button>
+</nav>
+
+<main id="tab-config" class="tab show">
+  <div class="card">
+    <h2>站点与评论</h2>
+    <div class="row">
+      <div class="field"><label>博客地址 siteUrl</label><input id="f-siteUrl" placeholder="https://你的博客.com"></div>
+      <div class="field"><label>Artalk 地址</label><input id="f-artalk-server" placeholder="https://artalk.你的博客.com"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Artalk 站点名</label><input id="f-artalk-site" placeholder="site name"></div>
+      <div class="field"><label>新帖 URL 匹配</label><input id="f-postUrlPattern" placeholder="\.html$"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>AI 大脑</h2>
+    <div class="row">
+      <div class="field"><label>接口地址 endpoint</label><input id="f-endpoint" placeholder="https://api.xxx/v1/chat/completions"></div>
+      <div class="field"><label>模型 model</label><input id="f-model" placeholder="gpt-4o-mini"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>API Key（留空保持原值）</label><input id="f-apikey" type="password" placeholder="****"></div>
+      <div class="field"><label>温度 temperature</label><input id="f-temperature" type="number" step="0.1" min="0" max="2"></div>
+    </div>
+    <div class="row">
+      <label class="chk"><input id="f-mock" type="checkbox"> mock 模式（只打日志，不发真实评论）</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>行为</h2>
+    <div class="row">
+      <div class="field"><label>检查间隔 checkInterval</label><input id="f-checkInterval" placeholder="5m"></div>
+      <div class="field"><label>级联最大轮数</label><input id="f-cascadeMaxRounds" type="number" min="0"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>每帖最多 AI 评论</label><input id="f-maxCommentsPerPost" type="number" min="1"></div>
+      <div class="field"><label>上下文长度 contextChars</label><input id="f-contextChars" type="number" min="100"></div>
+    </div>
+    <label class="chk"><input id="f-joinHumanComment" type="checkbox"> 接真人评论的话</label>
+  </div>
+
+  <div class="card">
+    <h2>角色</h2>
+    <div id="roles"></div>
+    <button class="btn ghost" id="add-role">+ 添加角色</button>
+  </div>
+
+  <button class="btn" id="save" style="width:100%;padding:12px">保存配置</button>
+</main>
+
+<main id="tab-status" class="tab">
+  <div class="card">
+    <h2>最近动态</h2>
+    <div id="status-list"><div class="muted">加载中…</div></div>
+  </div>
+</main>
+</div>
+<div id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var API = "/ai-bot-admin/api/";
+  var url = new URL(location.href);
+  if (url.searchParams.get("api")) { API = url.searchParams.get("api"); }
+  var cfg = null;
+  var TOKEN_KEY = "amigo_admin_token";
+  var $ = function(id){ return document.getElementById(id); };
+
+  function toast(msg, ok){
+    var t = $("toast");
+    t.textContent = msg;
+    t.className = "show " + (ok === false ? "err" : ok === true ? "ok" : "");
+    clearTimeout(toast._h);
+    toast._h = setTimeout(function(){ t.className = ""; }, 2400);
+  }
+  function token(){ return localStorage.getItem(TOKEN_KEY) || ""; }
+  function setToken(t){ if (t) { localStorage.setItem(TOKEN_KEY, t); } }
+  function authHeaders(){
+    var h = { "Content-Type": "application/json" };
+    if (token()) { h.Authorization = "Bearer " + token(); }
+    return h;
+  }
+  function api(path, method, body){
+    return fetch(API + path, {
+      method: method || "GET",
+      headers: authHeaders(),
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function(r){
+      return r.json().catch(function(){ return {}; }).then(function(j){
+        if (!r.ok) { throw new Error(j.error || ("HTTP " + r.status)); }
+        return j;
+      });
+    });
+  }
+
+  function connect(){
+    var t = $("token").value.trim();
+    if (!t) { toast("请输入 token", false); return; }
+    setToken(t);
+    loadConfig().catch(function(e){ toast("连接失败: " + e.message, false); });
+  }
+
+  function loadConfig(){
+    return api("config").then(function(c){
+      cfg = c;
+      fillConfig(c);
+      $("login").style.display = "none";
+      $("tabs").style.display = "flex";
+      toast("已连接", true);
+    });
+  }
+
+  function fillConfig(c){
+    $("f-siteUrl").value = c.siteUrl || "";
+    $("f-artalk-server").value = c.artalk && c.artalk.server || "";
+    $("f-artalk-site").value = c.artalk && c.artalk.site || "";
+    $("f-postUrlPattern").value = c.postUrlPattern || "";
+    $("f-endpoint").value = c.llm && c.llm.endpoint || "";
+    $("f-apikey").value = c.llm && c.llm.apiKey || "";
+    $("f-model").value = c.llm && c.llm.model || "";
+    $("f-temperature").value = c.llm && c.llm.temperature || 0.9;
+    $("f-mock").checked = !!c.mock;
+    $("f-checkInterval").value = c.behavior && c.behavior.checkInterval || "5m";
+    $("f-cascadeMaxRounds").value = c.behavior && c.behavior.cascadeMaxRounds || 2;
+    $("f-maxCommentsPerPost").value = c.behavior && c.behavior.maxCommentsPerPost || 8;
+    $("f-contextChars").value = c.behavior && c.behavior.contextChars || 800;
+    $("f-joinHumanComment").checked = !!(c.behavior && c.behavior.joinHumanComment);
+    renderRoles(c.characters || []);
+  }
+
+  function renderRoles(chars){
+    var box = $("roles");
+    box.innerHTML = "";
+    (chars || []).forEach(function(ch, i){ box.appendChild(roleCard(ch, i)); });
+  }
+
+  function roleCard(ch, i){
+    var div = document.createElement("div");
+    div.className = "role";
+    div.innerHTML =
+      '<div class="head"><b>角色 ' + (i + 1) + '</b>' +
+      '<button class="btn danger" data-del="' + i + '">删除</button></div>' +
+      '<div class="row">' +
+        '<div class="field"><label>昵称</label><input data-k="name" value="' + esc(ch.name || "") + '"></div>' +
+        '<div class="field"><label>邮箱（Artalk 身份）</label><input data-k="email" value="' + esc(ch.email || "") + '"></div>' +
+      '</div>' +
+      '<div class="row">' +
+        '<div class="field"><label>头像 URL</label><input data-k="avatar" value="' + esc(ch.avatar || "") + '"></div>' +
+      '</div>' +
+      '<div class="field" style="margin-bottom:8px"><label>人设 persona</label>' +
+      '<textarea data-k="persona">' + esc(ch.persona || "") + '</textarea></div>' +
+      '<div class="row">' +
+        '<div class="field"><label>活跃度 activity 0~100</label><input data-k="activity" type="number" min="0" max="100" value="' + (ch.activity == null ? 60 : ch.activity) + '"></div>' +
+        '<div class="field"><label>点赞率 likeRate 0~1</label><input data-k="likeRate" type="number" step="0.05" min="0" max="1" value="' + (ch.likeRate == null ? 0.15 : ch.likeRate) + '"></div>' +
+      '</div>' +
+      '<label class="chk"><input type="checkbox" data-k="isBestFriend"' + (ch.isBestFriend ? " checked" : "") + '> 挚友（每帖必回）</label>';
+    return div;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  function collectConfig(){
+    function num(id, def){ var v = parseFloat($(id).value); return isNaN(v) ? def : v; }
+    var chars = [];
+    document.querySelectorAll("#roles .role").forEach(function(card){
+      var ch = {};
+      card.querySelectorAll("[data-k]").forEach(function(inp){
+        var k = inp.getAttribute("data-k");
+        if (inp.type === "checkbox") { ch[k] = inp.checked; }
+        else if (k === "activity") { ch[k] = Math.max(0, Math.min(100, parseInt(inp.value, 10) || 0)); }
+        else if (k === "likeRate") { ch[k] = Math.max(0, Math.min(1, parseFloat(inp.value) || 0)); }
+        else { ch[k] = inp.value.trim(); }
+      });
+      chars.push(ch);
+    });
+    return {
+      siteUrl: $("f-siteUrl").value.trim(),
+      postUrlPattern: $("f-postUrlPattern").value.trim(),
+      artalk: {
+        server: $("f-artalk-server").value.trim(),
+        site: $("f-artalk-site").value.trim()
+      },
+      llm: {
+        endpoint: $("f-endpoint").value.trim(),
+        apiKey: $("f-apikey").value.trim(),
+        model: $("f-model").value.trim(),
+        temperature: num("f-temperature", 0.9),
+        maxTokens: cfg.llm.maxTokens || 200,
+        timeout: cfg.llm.timeout || "60s"
+      },
+      behavior: {
+        checkInterval: $("f-checkInterval").value.trim(),
+        snoozeMin: cfg.behavior.snoozeMin || "30m",
+        snoozeMax: cfg.behavior.snoozeMax || "24h",
+        joinHumanComment: $("f-joinHumanComment").checked,
+        joinHumanCommentRate: cfg.behavior.joinHumanCommentRate || 0.3,
+        aiReplyRate: cfg.behavior.aiReplyRate || 0.4,
+        cascadeMaxRounds: parseInt($("f-cascadeMaxRounds").value, 10) || 0,
+        cascadeDelayMin: cfg.behavior.cascadeDelayMin || "10m",
+        cascadeDelayMax: cfg.behavior.cascadeDelayMax || "60m",
+        maxCommentsPerPost: parseInt($("f-maxCommentsPerPost").value, 10) || 8,
+        activeWindow: cfg.behavior.activeWindow || "48h",
+        contextChars: parseInt($("f-contextChars").value, 10) || 800
+      },
+      characters: chars,
+      mock: $("f-mock").checked,
+      stateFile: cfg.stateFile || "ai-state.json",
+      logLevel: cfg.logLevel || "info"
+    };
+  }
+
+  function save(){
+    if (!cfg) { return; }
+    var btn = $("save");
+    btn.disabled = true;
+    api("config", "PUT", collectConfig()).then(function(j){
+      toast(j.ok || "已保存", true);
+      btn.disabled = false;
+    }).catch(function(e){
+      toast("保存失败: " + e.message, false);
+      btn.disabled = false;
+    });
+  }
+
+  function loadStatus(){
+    $("status-list").innerHTML = '<div class="muted">加载中…</div>';
+    api("status").then(function(d){
+      if (!d.posts || !d.posts.length) { $("status-list").innerHTML = '<div class="muted">还没有动态，等新帖出现后这里会显示角色行动。</div>'; return; }
+      var h = '<table><tr><th>帖子</th><th>AI 评论</th><th>角色状态</th></tr>';
+      d.posts.slice().reverse().forEach(function(p){
+        var badges = "";
+        Object.keys(p.characters || {}).forEach(function(n){
+          badges += '<span class="badge ' + (p.characters[n] || "") + '">' + esc(n) + "·" + esc(p.characters[n] || "") + '</span> ';
+        });
+        h += '<tr><td>' + esc(p.title || p.url) + '</td><td>' + (p.aiCount || 0) + '</td><td>' + badges + '</td></tr>';
+      });
+      h += "</table>";
+      $("status-list").innerHTML = h;
+    }).catch(function(e){
+      $("status-list").innerHTML = '<div class="muted">加载失败: ' + esc(e.message) + '</div>';
+    });
+  }
+
+  $("connect").addEventListener("click", connect);
+  $("token").addEventListener("keydown", function(e){ if (e.key === "Enter") { connect(); } });
+  $("add-role").addEventListener("click", function(){
+    if (!cfg) { return; }
+    cfg.characters = cfg.characters || [];
+    cfg.characters.push({ name: "", email: "", avatar: "", persona: "", activity: 60, likeRate: 0.15, isBestFriend: false });
+    renderRoles(cfg.characters);
+  });
+  $("roles").addEventListener("click", function(e){
+    var del = e.target.closest("[data-del]");
+    if (!del || !cfg) { return; }
+    cfg.characters.splice(parseInt(del.getAttribute("data-del"), 10), 1);
+    renderRoles(cfg.characters);
+  });
+  $("save").addEventListener("click", save);
+  document.querySelectorAll("#tabs button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("#tabs button").forEach(function(x){ x.classList.remove("active"); });
+      b.classList.add("active");
+      var tab = b.getAttribute("data-tab");
+      document.querySelectorAll(".tab").forEach(function(x){ x.classList.remove("show"); });
+      $("tab-" + tab).classList.add("show");
+      if (tab === "status") { loadStatus(); }
+    });
+  });
+
+  if (token()) {
+    $("token").value = token();
+    loadConfig().catch(function(e){ toast("连接失败: " + e.message, false); });
+  }
+})();
+</script>
+</body>
+</html>

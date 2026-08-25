@@ -83,3 +83,38 @@ journalctl -u amigo-ai-bot -f   # 看日志
 ## 状态文件
 
 `ai-state.json` 记录每个帖子的处理进度（刷到时刻、回复/点赞/忽略状态、cascade 轮次、已见评论 ID）。删除该文件会重新从 sitemap 发现帖子并重复评论，一般不要手动动它；想重置某个帖子的 AI 评论，删掉文件里对应 URL 条目即可。
+## 管理 API + 网页管理（可选）
+
+bot 内置 HTTP 管理接口，主题自带一个与博客风格一致的暗色管理页（`static/ai-bot-admin/`）。
+
+1. `config.json` 里加管理 token：
+
+   ```json
+   "admin": { "token": "换成你的强随机密码" }
+   ```
+
+2. 启动时带 `-admin` 参数（只监听本机，靠 Nginx 反代暴露）：
+
+   ```ini
+   ExecStart=/opt/amigo-ai-bot/amigo-ai-bot -config /opt/amigo-ai-bot/config.json -admin 127.0.0.1:8080
+   ```
+
+3. Nginx 反代（同域，管理页 JS 直接调相对路径）：
+
+   ```nginx
+   location /ai-bot-admin/api/ {
+       proxy_pass http://127.0.0.1:8080/api/;
+       proxy_set_header Host $host;
+   }
+   ```
+
+   `https://你的博客.com/ai-bot-admin/` 打开管理页，填 token 后即可：改角色、活跃度、LLM 接口、看每帖回复状态。**务必给 `/ai-bot-admin/` 加一层 Basic Auth**（或至少把 `ai-bot-admin` 目录在 Nginx 里藏掉入口），别让配置页裸奔公网。
+
+管理接口一览：
+
+| 端点 | 说明 |
+|------|------|
+| `GET /api/health` | 健康检查（无需 token） |
+| `GET /api/config` | 读配置（apiKey / admin.token 掩码显示） |
+| `PUT /api/config` | 保存配置（apiKey 传 `****` 或留空保持原值；保存后需重启 bot 生效） |
+| `GET /api/status` | 每帖的角色行动摘要 |

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,6 +14,7 @@ import (
 
 func main() {
 	configPath := flag.String("config", "config.json", "配置文件路径（JSON）")
+	adminAddr := flag.String("admin", "", "管理 API 监听地址（如 127.0.0.1:8080），留空不启动")
 	flag.Parse()
 
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
@@ -61,6 +63,19 @@ func main() {
 		"characters", len(cfg.Characters),
 		"site", cfg.SiteURL,
 		"mock", cfg.Mock)
+
+	if *adminAddr != "" {
+		srv := &http.Server{
+			Addr:    *adminAddr,
+			Handler: NewAdminServer(*configPath, cfg.StateFile, cfg.Admin.Token, log).Handler(),
+		}
+		go func() {
+			log.Info("管理 API 启动", "addr", *adminAddr)
+			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Error("管理 API 退出", "err", err)
+			}
+		}()
+	}
 
 	// 启动先跑一轮，之后按间隔循环
 	for {

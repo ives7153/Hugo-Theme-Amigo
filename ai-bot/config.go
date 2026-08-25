@@ -16,6 +16,7 @@ type Config struct {
 	Behavior       BehaviorConfig `json:"behavior"`
 	Characters     []Character    `json:"characters"`
 	Mock           bool           `json:"mock"`
+	Admin          AdminConfig    `json:"admin"`
 	StateFile      string         `json:"stateFile"`
 	LogLevel       string         `json:"logLevel"`
 }
