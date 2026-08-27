@@ -52,9 +52,10 @@ class FeedFragment : Fragment() {
         binding.recycler.layoutManager = LinearLayoutManager(requireContext())
         binding.recycler.adapter = adapter
 
-        binding.btnRefresh.setOnClickListener { refresh() }
+        // 微信风格：点封面/头像/名字 发朋友圈
+        binding.ownerAvatar.setOnClickListener { openEditor() }
+        binding.ownerName.setOnClickListener { openEditor() }
         binding.btnFirstPost.setOnClickListener { openEditor() }
-        binding.profileBar.setOnClickListener { openEditor() }
 
         observeFeed()
         viewLifecycleOwner.lifecycleScope.launch { refreshProfile() }
@@ -77,7 +78,7 @@ class FeedFragment : Fragment() {
                     binding.emptyView.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "加载失败：", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "加载失败：${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

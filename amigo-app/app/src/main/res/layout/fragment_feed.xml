@@ -5,51 +5,49 @@
     android:orientation="vertical"
     android:background="@color/bg">
 
-    <LinearLayout
-        android:id="@+id/profile_bar"
+    <!-- 朋友圈封面头：渐变背景 + 右下角头像/名字（微信风格） -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="14dp"
-        android:background="@color/card">
-
-        <ImageView
-            android:id="@+id/owner_avatar"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@drawable/bg_avatar"
-            android:scaleType="centerCrop" />
+        android:layout_height="170dp"
+        android:background="@drawable/bg_cover">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="12dp"
-            android:orientation="vertical">
+            android:layout_gravity="bottom|right"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="14dp">
+
             <TextView
                 android:id="@+id/owner_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/text"
-                android:textSize="17sp"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/owner_sub"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="@color/muted"
-                android:textSize="12sp" />
+                android:textColor="#ffffff"
+                android:textSize="19sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="10dp" />
+
+            <ImageView
+                android:id="@+id/owner_avatar"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_avatar"
+                android:scaleType="centerCrop"
+                android:contentDescription="头像" />
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/btn_refresh"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_comment"
-            android:contentDescription="@string/action_refresh"
-            android:padding="8dp" />
-    </LinearLayout>
+        <TextView
+            android:id="@+id/owner_sub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|left"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="20dp"
+            android:textColor="#99ffffff"
+            android:textSize="12sp" />
+    </FrameLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
@@ -57,7 +55,9 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:padding="10dp" />
+        android:paddingTop="6dp"
+        android:paddingBottom="12dp"
+        android:scrollbars="vertical" />
 
     <LinearLayout
         android:id="@+id/empty_view"

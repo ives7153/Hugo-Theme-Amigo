@@ -7,8 +7,10 @@
     android:orientation="vertical"
     android:background="@drawable/bg_card"
     android:padding="12dp"
-    android:layout_marginBottom="10dp">
+    android:layout_marginHorizontal="10dp"
+    android:layout_marginTop="8dp">
 
+    <!-- 作者行：圆角头像 + 名字 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -27,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:textColor="@color/text"
+            android:textColor="@color/green"
             android:textSize="15sp"
             android:textStyle="bold"
             tools:text="我" />
@@ -50,6 +52,7 @@
         android:layout_marginTop="8dp"
         android:orientation="vertical" />
 
+    <!-- 时间 + 操作区（微信：右下角赞/评论） -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -66,38 +69,52 @@
             android:textSize="12sp"
             tools:text="刚刚" />
 
-        <ImageView
-            android:id="@+id/btn_comment"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:src="@drawable/ic_comment"
-            android:contentDescription="@string/comment_hint"
-            android:padding="4dp" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_comment_box"
+            android:paddingHorizontal="4dp"
+            android:paddingVertical="2dp">
 
-        <ImageView
-            android:id="@+id/btn_like"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_like"
-            android:contentDescription="@string/send"
-            android:padding="4dp" />
+            <ImageView
+                android:id="@+id/btn_like"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:src="@drawable/ic_like"
+                android:contentDescription="赞"
+                android:padding="4dp" />
+
+            <ImageView
+                android:id="@+id/btn_comment"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_marginStart="2dp"
+                android:src="@drawable/ic_comment"
+                android:contentDescription="评论"
+                android:padding="4dp" />
+        </LinearLayout>
     </LinearLayout>
 
+    <!-- 点赞区：❤️ 名字 -->
     <TextView
         android:id="@+id/like_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
+        android:background="@drawable/bg_comment_box"
+        android:padding="8dp"
         android:textColor="@color/green"
         android:textSize="13sp"
         android:visibility="gone" />
 
+    <!-- 评论区：灰底，名字：内容 -->
     <TextView
         android:id="@+id/comment_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/card2"
+        android:background="@drawable/bg_comment_box"
         android:padding="8dp"
         android:textColor="@color/text"
         android:textSize="13sp"

@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -21,7 +22,7 @@ import com.amigo.app.data.SettingsRepository
 import com.amigo.app.databinding.FragmentSettingsBinding
 import com.amigo.app.util.AvatarLoader
 import com.amigo.app.util.BackupManager
-import com.amigo.app.work.AIWorker
+import com.amigo.app.util.ImageStore
 import kotlinx.coroutines.launch
 
 class SettingsFragment : Fragment() {
@@ -35,10 +36,14 @@ class SettingsFragment : Fragment() {
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) {
                 lifecycleScope.launch {
-                    val rel = com.amigo.app.util.ImageStore.importFromUri(requireContext(), uri)
-                    settings.set(PrefKeys.OWNER_AVATAR, rel)
-                    AvatarLoader.load(requireContext(), binding.ownerAvatar, rel, settings.getString(PrefKeys.OWNER_NAME, "我"))
-                    Toast.makeText(requireContext(), "头像已更新", Toast.LENGTH_SHORT).show()
+                    try {
+                        val rel = ImageStore.importFromUri(requireContext(), uri)
+                        settings.set(PrefKeys.OWNER_AVATAR, rel)
+                        refreshProfile()
+                        Toast.makeText(requireContext(), "头像已更新", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "头像更新失败：${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
@@ -65,7 +70,7 @@ class SettingsFragment : Fragment() {
                         val msg = BackupManager.import(requireContext(), uri)
                         Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
                         reloadCharacters()
-                        reloadProfile()
+                        lifecycleScope.launch { refreshProfile() }
                     } catch (e: Exception) {
                         Toast.makeText(requireContext(), "导入失败：${e.message}", Toast.LENGTH_LONG).show()
                     }
@@ -86,10 +91,32 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.btnPickAvatar.setOnClickListener {
-            avatarPicker.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            avatarPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         }
-        binding.btnSaveProfile.setOnClickListener { lifecycleScope.launch { saveProfile() } }
-        binding.btnSaveAi.setOnClickListener { lifecycleScope.launch { saveAI() } }
+        binding.btnSaveProfile.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    val name = binding.ownerNameInput.text.toString().trim().ifEmpty { "我" }
+                    settings.set(PrefKeys.OWNER_NAME, name)
+                    Toast.makeText(requireContext(), "资料已保存", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "保存失败：${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        binding.btnSaveAi.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    settings.set(PrefKeys.LLM_ENDPOINT, binding.llmEndpoint.text.toString().trim())
+                    settings.set(PrefKeys.LLM_API_KEY, binding.llmApiKey.text.toString().trim())
+                    settings.set(PrefKeys.LLM_MODEL, binding.llmModel.text.toString().trim())
+                    settings.set(PrefKeys.LLM_TEMPERATURE, binding.llmTemperature.text.toString().trim().ifEmpty { "0.9" })
+                    Toast.makeText(requireContext(), "AI 设置已保存", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "保存失败：${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
         binding.btnAddCharacter.setOnClickListener {
             characterEditLauncher.launch(Intent(requireContext(), CharacterEditActivity::class.java))
         }
@@ -100,22 +127,31 @@ class SettingsFragment : Fragment() {
             importLauncher.launch(arrayOf("application/zip", "application/octet-stream", "*/*"))
         }
         binding.aiSwitch.setOnCheckedChangeListener { _, checked ->
-            lifecycleScope.launch { settings.set(PrefKeys.AI_ENABLED, if (checked) "1" else "0") }
+            lifecycleScope.launch {
+                try {
+                    settings.set(PrefKeys.AI_ENABLED, if (checked) "1" else "0")
+                } catch (e: Exception) {
+                }
+            }
         }
         lifecycleScope.launch {
-            reloadProfile()
-            reloadAI()
+            try {
+                refreshProfile()
+                refreshAI()
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "加载设置失败：${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
         reloadCharacters()
     }
 
-    private suspend fun reloadProfile() {
+    private suspend fun refreshProfile() {
         val name = settings.getString(PrefKeys.OWNER_NAME, "我")
         binding.ownerNameInput.setText(name)
         AvatarLoader.load(requireContext(), binding.ownerAvatar, settings.getString(PrefKeys.OWNER_AVATAR), name)
     }
 
-    private suspend fun reloadAI() {
+    private suspend fun refreshAI() {
         binding.aiSwitch.isChecked = settings.getString(PrefKeys.AI_ENABLED, "1") == "1"
         binding.llmEndpoint.setText(settings.getString(PrefKeys.LLM_ENDPOINT))
         binding.llmApiKey.setText(settings.getString(PrefKeys.LLM_API_KEY))
@@ -123,34 +159,23 @@ class SettingsFragment : Fragment() {
         binding.llmTemperature.setText(settings.getFloat(PrefKeys.LLM_TEMPERATURE, 0.9f).toString())
     }
 
-    private suspend fun saveProfile() {
-        val name = binding.ownerNameInput.text.toString().trim().ifEmpty { "我" }
-        settings.set(PrefKeys.OWNER_NAME, name)
-        Toast.makeText(requireContext(), "资料已保存", Toast.LENGTH_SHORT).show()
-    }
-
-    private suspend fun saveAI() {
-        settings.set(PrefKeys.LLM_ENDPOINT, binding.llmEndpoint.text.toString().trim())
-        settings.set(PrefKeys.LLM_API_KEY, binding.llmApiKey.text.toString().trim())
-        settings.set(PrefKeys.LLM_MODEL, binding.llmModel.text.toString().trim())
-        settings.set(PrefKeys.LLM_TEMPERATURE, binding.llmTemperature.text.toString().trim().ifEmpty { "0.9" })
-        Toast.makeText(requireContext(), "AI 设置已保存", Toast.LENGTH_SHORT).show()
-    }
-
     private fun reloadCharacters() {
         lifecycleScope.launch {
-            val list = db.characterDao().getAll()
-            binding.characterList.removeAllViews()
-            if (list.isEmpty()) {
-                val hint = TextView(requireContext())
-                hint.text = "还没有角色，先建一个吧"
-                hint.setTextColor(requireContext().getColor(R.color.muted))
-                hint.textSize = 13f
-                hint.setPadding(0, 12, 0, 0)
-                binding.characterList.addView(hint)
-                return@launch
+            try {
+                val list = db.characterDao().getAll()
+                binding.characterList.removeAllViews()
+                if (list.isEmpty()) {
+                    val hint = TextView(requireContext())
+                    hint.text = "还没有角色，先建一个吧"
+                    hint.setTextColor(requireContext().getColor(R.color.muted))
+                    hint.textSize = 13f
+                    hint.setPadding(0, 12, 0, 0)
+                    binding.characterList.addView(hint)
+                    return@launch
+                }
+                list.forEach { ch -> binding.characterList.addView(characterRow(ch)) }
+            } catch (e: Exception) {
             }
-            list.forEach { ch -> binding.characterList.addView(characterRow(ch)) }
         }
     }
 
@@ -166,7 +191,7 @@ class SettingsFragment : Fragment() {
         avatar.layoutParams = LinearLayout.LayoutParams(size, size)
         avatar.setBackgroundResource(R.drawable.bg_avatar)
         row.addView(avatar)
-        lifecycleScope.launch { com.amigo.app.util.AvatarLoader.load(requireContext(), avatar, ch.avatar, ch.name) }
+        lifecycleScope.launch { AvatarLoader.load(requireContext(), avatar, ch.avatar, ch.name) }
 
         val col = LinearLayout(requireContext())
         col.orientation = LinearLayout.VERTICAL

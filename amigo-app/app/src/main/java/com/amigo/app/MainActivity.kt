@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.container, feedFragment, "feed")
+                .add(R.id.container, feedFragment, "feed")
                 .commit()
         }
 
@@ -47,11 +47,16 @@ class MainActivity : AppCompatActivity() {
     private fun switchTo(fragment: Fragment, tag: String): Boolean {
         val fm = supportFragmentManager
         val current = fm.findFragmentById(R.id.container)
-        if (current == fragment) return true
-        fm.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.container, fragment, tag)
-            .commit()
+        if (current === fragment) return true
+        val ft = fm.beginTransaction()
+        ft.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+        if (current != null) ft.hide(current)
+        if (fragment.isAdded) {
+            ft.show(fragment)
+        } else {
+            ft.add(R.id.container, fragment, tag)
+        }
+        ft.commit()
         return true
     }
 
