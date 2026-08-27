@@ -2,7 +2,23 @@
 <resources>
     <string name="app_name">朋友圈</string>
     <string name="tab_feed">朋友圈</string>
-    <string name="tab_admin">设置</string>
-    <string name="menu_change_site">修改站点</string>
+    <string name="tab_settings">设置</string>
+    <string name="action_add_post">发朋友圈</string>
+    <string name="action_refresh">刷新</string>
+    <string name="menu_edit_character">编辑角色</string>
+    <string name="menu_delete">删除</string>
+    <string name="menu_export">导出备份</string>
+    <string name="menu_import">导入备份</string>
+    <string name="profile_title">我的资料</string>
+    <string name="ai_title">AI 评论</string>
+    <string name="characters_title">AI 角色</string>
+    <string name="data_title">数据管理</string>
+    <string name="owner_name_hint">你的名字</string>
+    <string name="owner_avatar_hint">设置头像</string>
+    <string name="content_hint">这一刻的想法…</string>
+    <string name="publish">发表</string>
+    <string name="add_images">添加图片</string>
+    <string name="comment_hint">评论…</string>
+    <string name="send">发送</string>
     <string name="welcome_hint">https://你的博客.com</string>
 </resources>

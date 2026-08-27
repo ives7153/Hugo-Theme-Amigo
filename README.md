@@ -3,7 +3,7 @@
 [![Hugo](https://img.shields.io/badge/Hugo-%230076D1.svg?style=flat&logo=hugo&logoColor=white)](https://gohugo.io/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-微信朋友圈风格的 Hugo 博客主题，加上一整套自玩生态：**AI 评论机器人**（多角色拟人评论）、**网页管理**（配置、动态、可视化发帖、图床）、**安卓 APP**（朋友圈 + 管理双 Tab）。
+微信朋友圈风格的 Hugo 博客主题，加上一整套自玩生态：**AI 评论机器人**（多角色拟人评论）、**网页管理**（配置、动态、可视化发帖、图床）、**安卓 APP**（本地私人朋友圈 + AI 角色，数据存手机、可导出导入）。
 
 主题 fork 自 [ives7153/Hugo-Theme-Amigo](https://github.com/ives7153/Hugo-Theme-Amigo)，在其之上增加了 AI 评论机器人与配套工具。
 
@@ -27,17 +27,18 @@
 - 发帖：可视化发朋友圈（写 MD → 自动构建部署 → AI 自动跟进评论）
 - 图床：上传图片自动插入正文（类型/大小校验）
 
-**安卓 APP（`amigo-app/`，原生 Kotlin）**
-- 底部 Tab：朋友圈（博客站点）/ 设置（管理页）
-- 首次打开填站点地址，右上角菜单可随时切换
-- 暗色原生壳，风格与主题一致
+**安卓 APP（`amigo-app/`，原生 Kotlin，本地私人朋友圈）**
+- 发图文朋友圈 + 点赞/评论，不依赖博客服务器
+- 多 AI 角色自动评论/互聊/点赞：挚友必回、活跃度随机出现、拟人延迟
+- LLM 接口可配（OpenAI 兼容）；数据存 Room + 本地图片，一键导出/导入备份
+- 暗色 UI 与主题风格一致
 
 ## 目录结构
 
 ```
 ├── ai-bot/                   # AI 评论机器人（Go 服务 + 管理 API）
 ├── static/ai-bot-admin/      # 网页管理页
-├── amigo-app/                # 安卓 APP（Kotlin + WebView）
+├── amigo-app/                # 安卓 APP（原生 Kotlin，本地朋友圈 + AI）
 ├── DEPLOY.md                 # 服务器整套部署手册
 └── layouts/ assets/          # 主题本体（上游）
 ```
@@ -59,7 +60,7 @@
 ## 文档
 
 - [AI 机器人配置与部署](ai-bot/README.md)
-- [安卓 APP 构建](amigo-app/README.md)
+- [安卓 APP 构建与使用](amigo-app/README.md)
 - [服务器部署手册](DEPLOY.md)
 - [主题使用文档（短代码、评论配置、主题参数）](THEME.md)
 
@@ -68,7 +69,6 @@
 - 评论内容前端 DOMPurify 消毒；`amigoConfig` 输出经 `jsonify` 防脚本逃逸
 - 管理 API token 鉴权 + Nginx Basic Auth 双层保护
 - 发布/上传接口白名单校验（slug、图片类型/大小、随机文件名）
-- 已移除第三方 IP 接口，CI 依赖锁定版本
 
 ## 许可证
 

@@ -11,4 +11,14 @@
         <item name="android:windowLightStatusBar">false</item>
         <item name="bottomNavigationStyle">@style/Widget.Material3.BottomNavigationView</item>
     </style>
+
+    <style name="SectionTitle" parent="android:Widget.TextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/green</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginTop">18dp</item>
+        <item name="android:layout_marginBottom">8dp</item>
+    </style>
 </resources>

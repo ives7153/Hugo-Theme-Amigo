@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <!-- 我的资料 -->
+        <TextView style="@style/SectionTitle" android:text="@string/profile_title" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <ImageView
+                    android:id="@+id/owner_avatar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_avatar"
+                    android:scaleType="centerCrop" />
+                <TextView
+                    android:id="@+id/btn_pick_avatar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="@string/owner_avatar_hint"
+                    android:textColor="@color/green"
+                    android:textSize="14sp"
+                    android:padding="6dp" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/owner_name_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="@string/owner_name_hint"
+                android:background="@drawable/bg_input"
+                android:textColor="@color/text"
+                android:textColorHint="@color/muted"
+                android:padding="10dp"
+                android:inputType="text" />
+
+            <TextView
+                android:id="@+id/btn_save_profile"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_green_btn"
+                android:gravity="center"
+                android:text="保存资料"
+                android:textColor="#ffffff"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- AI 评论 -->
+        <TextView style="@style/SectionTitle" android:text="@string/ai_title" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="后台 AI 自动评论"
+                    android:textColor="@color/text"
+                    android:textSize="14sp" />
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/ai_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/llm_endpoint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:hint="LLM 接口地址（OpenAI 兼容 chat/completions）"
+                android:background="@drawable/bg_input"
+                android:textColor="@color/text"
+                android:textColorHint="@color/muted"
+                android:padding="10dp"
+                android:inputType="textUri" />
+            <EditText
+                android:id="@+id/llm_api_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="API Key（可留空）"
+                android:background="@drawable/bg_input"
+                android:textColor="@color/text"
+                android:textColorHint="@color/muted"
+                android:padding="10dp"
+                android:inputType="textPassword" />
+            <EditText
+                android:id="@+id/llm_model"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="模型名（如 deepseek-chat）"
+                android:background="@drawable/bg_input"
+                android:textColor="@color/text"
+                android:textColorHint="@color/muted"
+                android:padding="10dp" />
+            <EditText
+                android:id="@+id/llm_temperature"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="temperature（0~2，默认 0.9）"
+                android:background="@drawable/bg_input"
+                android:textColor="@color/text"
+                android:textColorHint="@color/muted"
+                android:padding="10dp"
+                android:inputType="numberDecimal" />
+
+            <TextView
+                android:id="@+id/btn_save_ai"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_green_btn"
+                android:gravity="center"
+                android:text="保存 AI 设置"
+                android:textColor="#ffffff"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- AI 角色 -->
+        <TextView style="@style/SectionTitle" android:text="@string/characters_title" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/btn_add_character"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_input"
+                android:gravity="center"
+                android:text="＋ 新建 AI 角色"
+                android:textColor="@color/green"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:id="@+id/character_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="vertical" />
+        </LinearLayout>
+
+        <!-- 数据管理 -->
+        <TextView style="@style/SectionTitle" android:text="@string/data_title" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_card"
+            android:padding="14dp">
+
+            <TextView
+                android:id="@+id/btn_export"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_green_btn"
+                android:gravity="center"
+                android:text="@string/menu_export"
+                android:textColor="#ffffff"
+                android:textSize="14sp" />
+            <TextView
+                android:id="@+id/btn_import"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_gray_btn"
+                android:gravity="center"
+                android:text="@string/menu_import"
+                android:textColor="@color/text"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/bg">
 
-    <com.google.android.material.appbar.MaterialToolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@color/bg"
-        android:titleTextColor="@color/text" />
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/card"
+        android:title="@string/app_name"
+        app:titleTextColor="@color/text"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
 
-    <WebView
-        android:id="@+id/webview"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
@@ -23,6 +25,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/card"
-        app:menu="@menu/bottom_nav" />
-
+        app:itemIconTint="@color/muted"
+        app:itemTextColor="@color/muted"
+        app:menu="@menu/bottom_nav"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
 </LinearLayout>
